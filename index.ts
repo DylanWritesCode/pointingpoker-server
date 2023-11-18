@@ -4,8 +4,20 @@ import * as Guid from "./util/Guid";
 import { SocketSession } from "./types/SocketSession";
 import {store } from './store'
 import { PeerUser } from "./types/PeerUser";
+import winston from "winston";
+
+const logger = winston.createLogger({
+    level:'debug',
+    format: winston.format.json(),
+    transports:[ new winston.transports.Console(),
+        new winston.transports.File({
+            filename: "logs/serverLog.log"
+        }),
+    ]
+});
 
 const httpServer = createServer();
+
 const io = new Server(httpServer, {
     cors: {
         origin:"http://localhost:5173"
@@ -13,13 +25,13 @@ const io = new Server(httpServer, {
 });
 
 io.on('connection', (socket) => {
-    console.log(`A user is connecting from ${socket.handshake.address}`);
+    logger.info(`Incoming connection from ${socket.handshake.address}`);
 
     socket.on('disconnect', () => {
+        logger.info(`${socket.handshake.address} disconnected.`);
         const user = store.ActiveUsers.find(x=> x.SocketId == socket.id);
-        console.log(`Removing user from poker ${user?.SharedUser.PokerId}`)
         if(user != undefined) {
-            console.log(`User ${user.SharedUser.UserName} from ${user.IPAddress} has left poker session ${user.SharedUser.PokerId}`);
+            logger.info(`Removing User<${socket.handshake.address}> from poker session ${user.SharedUser.PokerId}`);
             var peerUsers = store.ActiveUsers.filter(x => x.SharedUser.PokerId == user.SharedUser.PokerId);
             for(let i = 0; i < peerUsers.length; i++) {
                 socket.broadcast.to(peerUsers[i].SocketId).emit("UserLeftSession", user.SharedUser);
@@ -32,8 +44,6 @@ io.on('connection', (socket) => {
                 }
             }
         }
-
-        console.log(`A user is disconnected from ${socket.handshake.address}`);
       });
 
       socket.on('RequestNewSession', (sessionName, playerName) => {
@@ -56,14 +66,13 @@ io.on('connection', (socket) => {
         const userCollection = store.ActiveUsers.filter(x=> x.SharedUser.PokerId == newUser.SharedUser.PokerId).flatMap(x => x.SharedUser);
 
         socket.emit("EstablishPokerSession", newUser.SharedUser, userCollection);
-
-        console.log(`${playerName} from ${socket.handshake.address} established a new pokwer session ${newUser.SharedUser.PokerId} called ${sessionName}`);
+        logger.info(`User<${socket.handshake.address} created a new poker session<${newUser.SharedUser.PokerId}> with the name ${sessionName}`);
       });
 
       socket.on('ServerVote', (pokerId:string, vote:string | undefined) => {
-        console.log(`Send vote to ${pokerId}`);
-        const user = store.ActiveUsers.find(x=> x.SocketId == socket.id && x.SharedUser.PokerId == pokerId);
+        logger.debug(`Poker Session<${pokerId}> recieved vote<${vote}> from User<${socket.handshake.address}>`);
 
+        const user = store.ActiveUsers.find(x=> x.SocketId == socket.id && x.SharedUser.PokerId == pokerId);
         if(user != undefined) {
             user.SharedUser.Vote = vote;
             socket.emit("UserVoted", user.SharedUser);
@@ -76,7 +85,6 @@ io.on('connection', (socket) => {
             }
 
             peerUsers.forEach((peer) => {
-                console.log(`Notifying peer of vote ${peer.SharedUser.UserName}`);
                 socket.broadcast.to(peer.SocketId).emit("UserVoted", user.SharedUser);
 
                 if(peersNotVoted.length == 0){
@@ -110,13 +118,13 @@ io.on('connection', (socket) => {
         });
 
         socket.emit("EstablishPokerSession", newUser.SharedUser, peerCollection);
+        logger.info(`User<${socket.handshake.address}> joined Poker Session<${pokerId}>`);
       });
 
       socket.on('LeaveSession', (pokerId:string) => {
         const user = store.ActiveUsers.find(x=> x.SharedUser.PokerId == pokerId && x.SocketId == socket.id);
-        console.log(`user left ${pokerId}`)
+
         if(user != undefined) {
-            console.log(`User ${user.SharedUser.UserName} from ${user.IPAddress} has left poker session ${user.SharedUser.PokerId}`);
             var peerUsers = store.ActiveUsers.filter(x => x.SharedUser.PokerId == pokerId);
             for(let i = 0; i < peerUsers.length; i++) {
                 socket.broadcast.to(peerUsers[i].SocketId).emit("UserLeftSession", user.SharedUser);
@@ -129,13 +137,15 @@ io.on('connection', (socket) => {
                 }
             }
         }
+        logger.info(`User<${socket.handshake.address}> left Poker Session<${pokerId}>`);
       });
 
       socket.on('RevealCardsForPlayers', (pokerId:string) => {
-            
             socket.emit("RevealVotes");
             const peers = store.ActiveUsers.filter(x=> x.SharedUser.PokerId == pokerId);
             peers.forEach(x=> socket.broadcast.to(x.SocketId).emit('RevealVotes'));
+
+            logger.debug(`User<${socket.handshake.address}> revealed cards in Poker Session<${pokerId}>`);
       });
 
       socket.on('ResetVoteForPlayers', (pokerId:string) => {
@@ -147,10 +157,11 @@ io.on('connection', (socket) => {
         });
 
         socket.emit('ResetVotes', peers.flatMap(x=> x.SharedUser))
+        logger.debug(`User<${socket.handshake.address}> reset cards in Poker Session<${pokerId}>`);
   });
 });
 
 
 httpServer.listen(3000, () => {
-    console.log('listening on *:30000');
+    logger.info("Server started on *:30000");
 })
