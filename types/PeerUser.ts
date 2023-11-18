@@ -3,5 +3,6 @@ export type PeerUser = {
     PokerId: string,
     PokerName: string,
     UserName:string,
-    Vote: string | undefined
+    Vote: string | undefined,
+    IsSpectator: boolean
 }
