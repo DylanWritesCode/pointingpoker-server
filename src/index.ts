@@ -162,6 +162,6 @@ io.on('connection', (socket) => {
 });
 
 
-httpServer.listen(2087, () => {
-    logger.info("Server started on *:2087");
+httpServer.listen(3000, () => {
+    logger.info("Server started on *:3000");
 })
