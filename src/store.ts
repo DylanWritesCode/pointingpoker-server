@@ -7,7 +7,7 @@ export const store = {
         for(let i = 0; i < store.ActiveUsers.length; i ++){
             const user = store.ActiveUsers[i];
             if(user.SocketId == socketId) {
-                store.ActiveUsers.splice(i);
+                store.ActiveUsers.splice(i,1);
                 break;
             }
         }
@@ -16,7 +16,7 @@ export const store = {
         for(let i = 0; i < store.ActiveUsers.length; i ++){
             const user = store.ActiveUsers[i];
             if(user.SocketId == socketId && user.SharedUser.PokerId == pokerId) {
-                store.ActiveUsers.splice(i);
+                store.ActiveUsers.splice(i,1);
                 break;
             }
         }
