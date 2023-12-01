@@ -5,6 +5,10 @@ import { SocketSession } from "./types/SocketSession";
 import {store } from './store'
 import { PeerUser } from "./types/PeerUser";
 import winston from "winston";
+import dotenv from "dotenv";
+
+dotenv.config({ path: `.env.${process.env["NODE_ENV"]}`});
+console.log(`Environment ${process.env["NODE_ENV"]}`)
 
 const logger = winston.createLogger({
     level:'debug',
@@ -20,7 +24,7 @@ const httpServer = createServer();
 
 const io = new Server(httpServer, {
     cors: {
-        origin:"http://localhost:5173"
+        origin:process.env.ORIGIN_URL
     }
 });
 
@@ -162,6 +166,6 @@ io.on('connection', (socket) => {
 });
 
 
-httpServer.listen(3000, () => {
-    logger.info("Server started on *:30000");
+httpServer.listen(process.env.SERVER_PORT, () => {
+    logger.info(`Server started on *:${process.env.SERVER_PORT}`);
 })

@@ -1,0 +1,15 @@
+{
+    "include": ["src", "types/**/*"],
+    "exclude": ["node_modules/**"],
+    "compilerOptions": {
+      "module": "CommonJS",
+      "lib": ["dom", "esnext"],
+      "rootDir": "./src",
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "noEmit": true
+    },
+    "ts-node": {
+      "files": true
+    }
+  }
