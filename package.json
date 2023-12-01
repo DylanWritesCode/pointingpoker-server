@@ -11,5 +11,8 @@
     "socket.io": "^4.7.2",
     "vue-socket.io": "^3.0.10",
     "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0"
   }
 }
