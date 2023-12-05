@@ -25,7 +25,7 @@ const httpServer = createServer();
 
 const io = new Server(httpServer, {
     cors: {
-        origin: true
+        origin: '*'
     },
     allowEIO3: true
 });
