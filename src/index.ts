@@ -9,7 +9,7 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: `.env.${process.env["NODE_ENV"]}`});
 console.log(`Environment ${process.env["NODE_ENV"]}`)
-onsole.log(`CORS ${process.env.ORIGIN_URL}`)
+console.log(`CORS ${process.env.ORIGIN_URL}`)
 
 const logger = winston.createLogger({
     level:'debug',
