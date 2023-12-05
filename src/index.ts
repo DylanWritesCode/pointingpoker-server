@@ -27,7 +27,7 @@ const io = new Server(httpServer, {
     cors: {
         origin: true
     },
-    allowEI03: true
+    allowEIO3: true
 });
 
 io.on('connection', (socket) => {
