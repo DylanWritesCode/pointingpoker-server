@@ -24,9 +24,9 @@ const logger = winston.createLogger({
 const httpServer = createServer();
 
 const io = new Server(httpServer, {
+    transports:['websocket','polling','flashsocket'],
     cors: {
-        origin: process.env.ORIGIN_URL,
-        credentials: true
+        origin: '*'
     },
     allowEIO3: true
 });
